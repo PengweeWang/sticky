@@ -28,7 +28,7 @@ body,
 /* ── Note header (integrated title bar) ── */
 
 .note-header {
-  width: 289px;
+  width: 280px;
   height: 28px;
   flex-shrink: 0;
   background: transparent;
@@ -211,7 +211,7 @@ body,
 }
 
 .sticky-note-window {
-  padding: 6px;
+  padding: 0;
 }
 
 .sticky-note-window .note-card {

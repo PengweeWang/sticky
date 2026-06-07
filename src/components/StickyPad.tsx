@@ -14,8 +14,6 @@ function StickyPad() {
   });
   const [content, setContent] = useState("");
   const [noteId, setNoteId] = useState(() => uuidv4());
-  const [rotation] = useState(() => -1.5);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [fontSize, setFontSize] = useState(14);
   const isDragging = useRef(false);
   const dragRef = useRef({ startX: 0, startY: 0, noteX: 0, noteY: 0, stickyId: "" });
@@ -29,11 +27,7 @@ function StickyPad() {
   const getNoteScreenPos = useCallback(() => {
     const winX = window.screenX ?? 0;
     const winY = window.screenY ?? 0;
-    const areaW = window.innerWidth;
-    const areaH = window.innerHeight;
-    const noteX = winX + (areaW - NOTE_SIZE.width) / 2;
-    const noteY = winY + (areaH - NOTE_SIZE.height) / 2;
-    return { x: noteX, y: noteY };
+    return { x: winX, y: winY + 28 };
   }, []);
 
   const tearOff = useCallback(
@@ -43,17 +37,17 @@ function StickyPad() {
 
       const id = noteId;
       const notePos = getNoteScreenPos();
-      const noteData = { id, content, color, width: NOTE_SIZE.width, height: NOTE_SIZE.height, rotation, fontSize };
+      const noteData = { id, content, color, width: NOTE_SIZE.width, height: NOTE_SIZE.height, fontSize };
       localStorage.setItem(`sticky-${id}`, JSON.stringify(noteData));
 
       const pad = SHADOW_PAD;
-      const offX = notePos.x - pad - 2;
-      const offY = notePos.y - pad + 11;
+      const wx = Math.round(notePos.x);
+      const wy = Math.round(notePos.y);
       try {
         await invoke("create_sticky", {
           noteId: id,
-          x: Math.round(offX),
-          y: Math.round(offY),
+          x: wx,
+          y: wy,
           width: NOTE_SIZE.width + pad * 2,
           height: NOTE_SIZE.height + pad * 2,
         });
@@ -67,13 +61,15 @@ function StickyPad() {
       dragRef.current = {
         startX: screenX,
         startY: screenY,
-        noteX: offX,
-        noteY: offY,
+        noteX: wx,
+        noteY: wy,
         stickyId: id,
       };
       isDragging.current = true;
 
-      addActiveNote(id, Math.round(offX), Math.round(offY));
+      addActiveNote(id, wx, wy);
+      setNoteId(uuidv4());
+      setContent("");
     },
     [content, color, noteId, getNoteScreenPos]
   );
@@ -82,8 +78,6 @@ function StickyPad() {
     const d = dragRef.current;
     const dx = screenX - d.startX;
     const dy = screenY - d.startY;
-    setDragOffset({ x: dx, y: dy });
-
     const nx = Math.round(d.noteX + dx);
     const ny = Math.round(d.noteY + dy);
     try {
@@ -98,12 +92,16 @@ function StickyPad() {
     }
   }, []);
 
-  const finishDrag = useCallback(() => {
+  const finishDrag = useCallback(async () => {
+    const stickyId = dragRef.current.stickyId;
     isDragging.current = false;
     tearingOff.current = false;
-    setDragOffset({ x: 0, y: 0 });
-    setNoteId(uuidv4());
-    setContent("");
+
+    try {
+      await invoke("set_sticky_bottom", { noteId: stickyId });
+    } catch {
+      // ignore
+    }
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -142,7 +140,7 @@ function StickyPad() {
   return (
     <div className="sticky-pad">
       <div className="pad-content">
-        <div className="note-header" data-tauri-drag-region style={{ backgroundColor: color, transform: `rotate(${rotation}deg) translate(-3px, 0px)` }}>
+        <div className="note-header" data-tauri-drag-region style={{ backgroundColor: color }}>
           <span className="title-text">Sticky Pad</span>
           <div className="title-controls">
             <button
@@ -171,11 +169,7 @@ function StickyPad() {
         <div
           ref={cardRef}
           className="note-card"
-          style={{
-            backgroundColor: color,
-            transform: `rotate(${rotation}deg) translate(${dragOffset.x}px, ${dragOffset.y}px)`,
-            zIndex: isDragging.current ? 999 : 1,
-          }}
+          style={{ backgroundColor: color }}
           onMouseDown={handleMouseDown}
         >
           <div className="adhesive-strip">

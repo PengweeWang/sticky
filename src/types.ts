@@ -19,4 +19,4 @@ export const NOTE_COLORS = [
 ] as const;
 
 export const NOTE_SIZE = { width: 280, height: 260 };
-export const SHADOW_PAD = 6;
+export const SHADOW_PAD = 0;

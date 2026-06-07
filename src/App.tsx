@@ -23,7 +23,7 @@ function App() {
     }
 
     const preventCtx = (e: MouseEvent) => e.preventDefault();
-    document.addEventListener("contextmenu", preventCtx);
+    // document.addEventListener("contextmenu", preventCtx);
     return () => document.removeEventListener("contextmenu", preventCtx);
   }, []);
 

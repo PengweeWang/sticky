@@ -68,6 +68,7 @@ pub fn run() {
             commands::create_sticky,
             commands::move_sticky,
             commands::delete_sticky,
+            commands::set_sticky_bottom,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

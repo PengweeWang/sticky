@@ -11,7 +11,6 @@ interface StickyNoteProps {
 function StickyNote({ noteId }: StickyNoteProps) {
   const [note, setNote] = useState<StickyNoteType | null>(null);
   const [pinned, setPinned] = useState(false);
-  const [rotation, setRotation] = useState(0);
   const appWindow = getCurrentWindow();
 
   useEffect(() => {
@@ -19,7 +18,6 @@ function StickyNote({ noteId }: StickyNoteProps) {
     if (data) {
       const parsed = JSON.parse(data);
       setNote(parsed);
-      setRotation(parsed.rotation || 0);
       if (parsed.pinned) setPinned(true);
     }
   }, [noteId]);
@@ -82,7 +80,6 @@ function StickyNote({ noteId }: StickyNoteProps) {
         style={{
           backgroundColor: note.color,
           cursor: pinned ? "default" : "grab",
-          transform: `rotate(${rotation}deg)`,
         }}
         onPointerDown={handlePointerDown}
       >

@@ -1,4 +1,6 @@
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+#[cfg(target_os = "windows")]
+use tauri::WebviewWindow;
 
 #[tauri::command]
 pub async fn create_sticky(
@@ -24,16 +26,8 @@ pub async fn create_sticky(
     .visible(true)
     .transparent(true)
     .shadow(false)
-    .always_on_bottom(true)
     .build()
     .map_err(|e| e.to_string())?;
-
-    #[cfg(target_os = "windows")]
-    {
-        if let Some(w) = app.get_webview_window(&label) {
-            crate::window_utils::force_always_on_bottom(&w);
-        }
-    }
 
     Ok(())
 }
@@ -56,4 +50,19 @@ pub async fn delete_sticky(app: AppHandle, note_id: String) -> Result<(), String
         window.close().map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn set_sticky_bottom(app: AppHandle, note_id: String) -> Result<(), String> {
+    let label = format!("sticky-{}", note_id);
+    let window = app.get_webview_window(&label).ok_or("window not found")?;
+    window.set_always_on_bottom(true).map_err(|e| e.to_string())?;
+    #[cfg(target_os = "windows")]
+    force_bottom_win32(&window);
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn force_bottom_win32(window: &WebviewWindow) {
+    crate::window_utils::force_always_on_bottom(window);
 }
