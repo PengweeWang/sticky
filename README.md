@@ -15,13 +15,16 @@ Write notes on a pad, tear them off, and they stick to your desktop — just lik
 ## Features
 
 - **Tear-off flow** — write on the main pad, drag out to create a posted sticky on the desktop
-- **Immutable stickies** — once posted, content is read-only; only deletable
+- **Task list support** — `- [ ]` / `-【】` syntax rendered as hand-drawn checkboxes with toggle
+- **Double-click to edit** — double-click a posted sticky to modify its content, blur to save
 - **Always on bottom** — sticky windows sit beneath all other windows, pinned to the desktop
-- **Pin to lock** — pin a sticky to fix it in place and prevent accidental moves
+- **Pin to lock** — pin a sticky to fix it in place, prevent accidental moves and edits
 - **Transparent windows** — only the note card is visible, creating a natural desk feel
 - **System tray** — left-click to show/hide, right-click menu for Show/Hide and Quit
-- **Persistence** — posted stickies survive restarts; window positions are restored
-- **Font scaling** — Ctrl + scroll in the editor to adjust text size
+- **Single instance** — launching again focuses the existing window
+- **Persistence** — posted stickies survive restarts; window positions and sizes are restored
+- **Font scaling** — Ctrl + scroll in the editor to adjust text size (10–24px)
+- **DPI aware** — properly handles display scaling (100%–200%)
 
 ## Prerequisites
 
@@ -47,12 +50,15 @@ The installer will be in `src-tauri/target/release/bundle/`.
 ## Usage
 
 | Action | How |
-|--------|-----|
+|--------|------|
 | Write a note | Type in the textarea on the main pad |
 | Change color | Click a color dot on the adhesive strip |
-| Post to desktop | Click the note card and drag |
-| Move a sticky | Drag the sticky window (when unpinned) |
+| Post to desktop | Click the note card and drag out |
+| Edit a posted sticky | Double-click the content area |
+| Move a sticky | Drag the adhesive strip (when unpinned) |
 | Pin / Unpin | Hover over sticky, click 📌 |
+| Complete a task | Click the checkbox on a task line |
+| Create a task | Type `- [ ] task` or `-【】task` |
 | Delete a sticky | Hover over sticky, click ✕ |
 | Adjust font size | Ctrl + scroll while editing |
 | Hide to tray | Click ✕ on the note header |
@@ -65,7 +71,7 @@ The installer will be in `src-tauri/target/release/bundle/`.
 | Framework | Tauri 2 |
 | Frontend | React 19 + TypeScript + Vite |
 | Styling | Plain CSS |
-| Plugins | `window-state`, `opener` |
+| Plugins | `window-state`, `opener`, `single-instance` |
 
 ## Project Structure
 

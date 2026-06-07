@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import type { StickyNote as StickyNoteType } from "../types";
@@ -46,7 +46,9 @@ function renderContent(
 function StickyNote({ noteId }: StickyNoteProps) {
   const [note, setNote] = useState<StickyNoteType | null>(null);
   const [pinned, setPinned] = useState(false);
+  const [editing, setEditing] = useState(false);
   const appWindow = getCurrentWindow();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const data = localStorage.getItem(`sticky-${noteId}`);
@@ -56,6 +58,16 @@ function StickyNote({ noteId }: StickyNoteProps) {
       if (parsed.pinned) setPinned(true);
     }
   }, [noteId]);
+
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(
+        textareaRef.current.value.length,
+        textareaRef.current.value.length
+      );
+    }
+  }, [editing]);
 
   const toggleTask = useCallback((lineIdx: number) => {
     setNote((prev) => {
@@ -76,6 +88,8 @@ function StickyNote({ noteId }: StickyNoteProps) {
       if (pinned) return;
       if ((e.target as HTMLElement).closest(".sticky-controls button")) return;
       if ((e.target as HTMLElement).closest(".task-cb")) return;
+      // Only drag from adhesive strip, leaving content free for double-click edit
+      if (!(e.target as HTMLElement).closest(".adhesive-strip")) return;
       try {
         await appWindow.startDragging();
       } catch {
@@ -109,6 +123,27 @@ function StickyNote({ noteId }: StickyNoteProps) {
     appWindow.close();
   };
 
+  const handleDoubleClick = useCallback(() => {
+    if (pinned) return;
+    setEditing(true);
+  }, [pinned]);
+
+  const finishEditing = useCallback(() => {
+    setEditing(false);
+    // Save to localStorage (content already in note state)
+    setNote((prev) => {
+      if (!prev) return prev;
+      localStorage.setItem(`sticky-${noteId}`, JSON.stringify(prev));
+      return prev;
+    });
+  }, [noteId]);
+
+  const handleEditKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      (e.target as HTMLTextAreaElement).blur();
+    }
+  }, []);
+
   useEffect(() => {
     let unlisten: (() => void) | undefined;
     (async () => {
@@ -122,6 +157,9 @@ function StickyNote({ noteId }: StickyNoteProps) {
   }, [noteId, appWindow]);
 
   if (!note) return null;
+
+  const fs = note.fontSize || 14;
+  const lh = fs + 10;
 
   return (
     <div className="sticky-note-window">
@@ -159,15 +197,31 @@ function StickyNote({ noteId }: StickyNoteProps) {
           </div>
         </div>
 
-        <div
-          className="note-content-readonly"
-          style={{
-            fontSize: note.fontSize || 14,
-            lineHeight: `${(note.fontSize || 14) + 10}px`,
-          }}
-        >
-          {renderContent(note.content, note.fontSize || 14, toggleTask)}
-        </div>
+        {editing ? (
+          <textarea
+            ref={textareaRef}
+            className="note-content-edit"
+            value={note.content}
+            onChange={(e) => {
+              setNote((prev) => {
+                if (!prev) return prev;
+                return { ...prev, content: e.target.value };
+              });
+            }}
+            onBlur={finishEditing}
+            onKeyDown={handleEditKeyDown}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{ fontSize: fs, lineHeight: `${lh}px` }}
+          />
+        ) : (
+          <div
+            className="note-content-readonly"
+            style={{ fontSize: fs, lineHeight: `${lh}px` }}
+            onDoubleClick={handleDoubleClick}
+          >
+            {renderContent(note.content, fs, toggleTask)}
+          </div>
+        )}
       </div>
     </div>
   );
