@@ -10,6 +10,12 @@ mod window_utils;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.show();
+                let _ = w.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_window_state::Builder::default().with_filter(|label| label == "main").build())
         .setup(|app| {

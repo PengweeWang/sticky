@@ -8,6 +8,41 @@ interface StickyNoteProps {
   noteId: string;
 }
 
+function renderContent(
+  content: string,
+  fontSize: number,
+  onToggle?: (lineIdx: number) => void
+) {
+  const lines = content.split("\n");
+  const lineH = fontSize + 10;
+  const cbSize = Math.max(fontSize, 12);
+  const cbTop = Math.round(((lineH - fontSize) / 2 - (cbSize - fontSize) / 2) - 1);
+  return lines.map((line, i) => {
+    const taskMatch = line.match(/^(?:- ?)?(\[|【)( |x|)(\]|】) ?(.+)/);
+    if (taskMatch) {
+      const checked = taskMatch[2] === "x";
+      const text = taskMatch[4];
+      return (
+        <div key={i} className="task-line" style={{ minHeight: lineH }}>
+          <span
+            className={`task-cb${checked ? " checked" : ""}`}
+            style={{ width: cbSize, height: cbSize, marginTop: cbTop }}
+            onClick={(e) => { e.stopPropagation(); onToggle?.(i); }}
+          >
+            {checked && <span className="task-checkmark" style={{ fontSize }}>✓</span>}
+          </span>
+          <span className={`task-label${checked ? " done" : ""}`}>{text}</span>
+        </div>
+      );
+    }
+    return (
+      <div key={i} className="text-line" style={{ minHeight: lineH }}>
+        {line || " "}
+      </div>
+    );
+  });
+}
+
 function StickyNote({ noteId }: StickyNoteProps) {
   const [note, setNote] = useState<StickyNoteType | null>(null);
   const [pinned, setPinned] = useState(false);
@@ -22,10 +57,25 @@ function StickyNote({ noteId }: StickyNoteProps) {
     }
   }, [noteId]);
 
+  const toggleTask = useCallback((lineIdx: number) => {
+    setNote((prev) => {
+      if (!prev) return prev;
+      const lines = prev.content.split("\n");
+      lines[lineIdx] = lines[lineIdx].replace(
+        /^(- ?)?(\[|【)( |x|)(\]|】)/,
+        (_, prefix, open, state, close) => `${prefix || ""}${open}${state === "x" ? " " : "x"}${close}`
+      );
+      const updated = { ...prev, content: lines.join("\n") };
+      localStorage.setItem(`sticky-${noteId}`, JSON.stringify(updated));
+      return updated;
+    });
+  }, [noteId]);
+
   const handlePointerDown = useCallback(
     async (e: React.PointerEvent) => {
       if (pinned) return;
       if ((e.target as HTMLElement).closest(".sticky-controls button")) return;
+      if ((e.target as HTMLElement).closest(".task-cb")) return;
       try {
         await appWindow.startDragging();
       } catch {
@@ -83,7 +133,7 @@ function StickyNote({ noteId }: StickyNoteProps) {
         }}
         onPointerDown={handlePointerDown}
       >
-        <div className="adhesive-strip">
+        <div className="adhesive-strip sticky-adhesive">
           <div className="sticky-controls">
             <button
               className={`pin-btn${pinned ? " pinned" : ""}`}
@@ -95,6 +145,8 @@ function StickyNote({ noteId }: StickyNoteProps) {
             >
               {pinned ? "\u{1F4CC}" : "\u{1F4CD}"}
             </button>
+          </div>
+          <div className="sticky-controls">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -114,7 +166,7 @@ function StickyNote({ noteId }: StickyNoteProps) {
             lineHeight: `${(note.fontSize || 14) + 10}px`,
           }}
         >
-          {note.content}
+          {renderContent(note.content, note.fontSize || 14, toggleTask)}
         </div>
       </div>
     </div>
