@@ -4,7 +4,7 @@
 
 Desktop sticky notes app built with [Tauri 2](https://v2.tauri.app/) + React + TypeScript.
 
-Write notes on a pad, tear them off, and they stick to your desktop — just like real sticky notes. Write once, read forever, only deletable.
+Write notes on a pad, tear them off, and they stick to your desktop — just like real sticky notes. Write once, read forever, ~~only deletable~~.
 
 <br clear="left">
 
@@ -58,7 +58,7 @@ The installer will be in `src-tauri/target/release/bundle/`.
 | Move a sticky | Drag the adhesive strip (when unpinned) |
 | Pin / Unpin | Hover over sticky, click 📌 |
 | Complete a task | Click the checkbox on a task line |
-| Create a task | Type `- [ ] task` or `-【】task` |
+| Create a task | Type `- [ ] task` or `-【】task` or `[] task`|
 | Delete a sticky | Hover over sticky, click ✕ |
 | Adjust font size | Ctrl + scroll while editing |
 | Hide to tray | Click ✕ on the note header |
