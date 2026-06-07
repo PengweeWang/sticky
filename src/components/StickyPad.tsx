@@ -25,9 +25,11 @@ function StickyPad() {
   }, [color]);
 
   const getNoteScreenPos = useCallback(() => {
-    const winX = window.screenX ?? 0;
-    const winY = window.screenY ?? 0;
-    return { x: winX, y: winY + 28 };
+    const dpr = window.devicePixelRatio || 1;
+    const winX = Math.round((window.screenX ?? 0) * dpr);
+    const winY = Math.round((window.screenY ?? 0) * dpr);
+    const headerH = Math.round(28 * dpr);
+    return { x: winX, y: winY + headerH };
   }, []);
 
   const tearOff = useCallback(
@@ -58,9 +60,10 @@ function StickyPad() {
         return;
       }
 
+      const dpr = window.devicePixelRatio || 1;
       dragRef.current = {
-        startX: screenX,
-        startY: screenY,
+        startX: Math.round(screenX * dpr),
+        startY: Math.round(screenY * dpr),
         noteX: wx,
         noteY: wy,
         stickyId: id,
@@ -75,11 +78,12 @@ function StickyPad() {
   );
 
   const moveSticky = useCallback(async (screenX: number, screenY: number) => {
+    const dpr = window.devicePixelRatio || 1;
+    const physX = Math.round(screenX * dpr);
+    const physY = Math.round(screenY * dpr);
     const d = dragRef.current;
-    const dx = screenX - d.startX;
-    const dy = screenY - d.startY;
-    const nx = Math.round(d.noteX + dx);
-    const ny = Math.round(d.noteY + dy);
+    const nx = Math.round(d.noteX + (physX - d.startX));
+    const ny = Math.round(d.noteY + (physY - d.startY));
     try {
       await invoke("move_sticky", {
         noteId: d.stickyId,

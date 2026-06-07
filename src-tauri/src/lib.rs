@@ -1,7 +1,7 @@
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager,
+    LogicalSize, Manager, Size,
 };
 
 mod commands;
@@ -62,6 +62,15 @@ pub fn run() {
                     }
                 })
                 .build(app)?;
+
+            // Set main window inner size in logical pixels (DPI-aware)
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.set_size(Size::Logical(LogicalSize {
+                    width: 280.0,
+                    height: 288.0,
+                }));
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

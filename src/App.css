@@ -18,7 +18,7 @@ body,
 
 .sticky-pad {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -28,7 +28,8 @@ body,
 /* ── Note header (integrated title bar) ── */
 
 .note-header {
-  width: 280px;
+  width: 100%;
+  max-width: 280px;
   height: 28px;
   flex-shrink: 0;
   background: transparent;
@@ -94,7 +95,8 @@ body,
 /* ── Note Card (pad) ── */
 
 .note-card {
-  width: 280px;
+  width: 100%;
+  max-width: 280px;
   min-height: 260px;
   border-radius: 2px 0 3px 8px;
   box-shadow: 4px 6px 20px rgba(0, 0, 0, 0.28);
@@ -202,8 +204,8 @@ body,
 /* ── StickyNote window (full viewport, transparent) ── */
 
 .sticky-note-window {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;

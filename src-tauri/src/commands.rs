@@ -1,6 +1,8 @@
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 #[cfg(target_os = "windows")]
 use tauri::WebviewWindow;
+#[cfg(target_os = "windows")]
+use crate::window_utils;
 
 #[tauri::command]
 pub async fn create_sticky(
@@ -13,7 +15,7 @@ pub async fn create_sticky(
 ) -> Result<(), String> {
     let label = format!("sticky-{}", note_id);
 
-    WebviewWindowBuilder::new(
+    let window = WebviewWindowBuilder::new(
         &app,
         &label,
         WebviewUrl::App(format!("index.html?note={}", note_id).into()),
@@ -28,6 +30,9 @@ pub async fn create_sticky(
     .shadow(false)
     .build()
     .map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "windows")]
+    window_utils::exclude_from_alt_tab(&window);
 
     Ok(())
 }

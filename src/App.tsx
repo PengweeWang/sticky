@@ -48,6 +48,7 @@ async function restoreStickies() {
         width: w,
         height: h,
       });
+      await invoke("set_sticky_bottom", { noteId: item.id });
     }
   } catch {
     // ignore
