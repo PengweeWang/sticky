@@ -12,6 +12,10 @@ Write notes on a pad, tear them off, and they stick to your desktop — just lik
 
 ![Sticky Screenshot](assets/display.png)
 
+## Demo
+
+<video src="assets/display.mp4" controls width="100%"></video>
+
 ## Features
 
 - **Tear-off flow** — write on the main pad, drag out to create a posted sticky on the desktop
